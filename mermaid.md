@@ -1,0 +1,10 @@
+flowchart TD
+    A[Diak / Oktato / Portas / Uzemeltetesi Igazgato] -->|Webfelulet| B[Frontend UI - React]
+    
+    B -->|REST API keresek| C[Auth Service - Python]
+    B -->|REST API keresek| D[Backend API - Python]
+    
+    C -->|JWT Token| B
+    
+    C -->|Felhasznalok / Jelszavak| E[(Adatbázis - MSSQL)]
+    D -->|Termek / Kulcsok / Foglalasok| E
