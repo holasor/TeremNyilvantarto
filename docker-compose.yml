@@ -13,6 +13,12 @@ services:
     volumes:
       - mssql_data:/var/opt/mssql
     restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'SzeretemATejet123!' -C -Q 'SELECT 1' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
 
   backend:
     build: ./Backend
@@ -25,11 +31,12 @@ services:
       - PYTHONUNBUFFERED=1
       - DB_SERVER=db
       - DB_PORT=1433
-      - DB_NAME=TeremNyilvantartoDB
+      - DB_NAME=TeremNyilvantarto
       - DB_USER=sa
       - DB_PASSWORD=SzeretemATejet123!
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     restart: always
 
 volumes:

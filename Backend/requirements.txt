@@ -4,3 +4,4 @@ sqlalchemy
 alembic
 pyodbc
 pydantic-settings
+email-validator
