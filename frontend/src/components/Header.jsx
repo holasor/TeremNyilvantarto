@@ -1,6 +1,6 @@
 import { Bell, Menu, Search, ChevronDown } from 'lucide-react'
 
-export default function Header({ onMenuClick }) {
+export default function Header({ onMenuClick, username = '' }) {
   return (
     <header className="sticky top-0 z-30 flex h-[76px] items-center justify-between border-b border-slate-200 bg-white/95 px-4 backdrop-blur sm:px-6 lg:px-8">
       <div className="flex items-center gap-3">
@@ -48,15 +48,15 @@ export default function Header({ onMenuClick }) {
           className="flex items-center gap-2 rounded-xl p-1.5 hover:bg-slate-50"
         >
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-700">
-            AD
+            {(username.trim().slice(0, 2) || 'U').toUpperCase()}
           </div>
 
           <div className="hidden text-left sm:block">
             <p className="text-sm font-semibold text-slate-800">
-              Admin Demo
+              {username || 'Felhasználó'}
             </p>
             <p className="text-xs text-slate-500">
-              Adminisztrátor
+              Bejelentkezett felhasználó
             </p>
           </div>
 
