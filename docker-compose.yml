@@ -39,5 +39,19 @@ services:
         condition: service_healthy
     restart: always
 
+
+  frontend:
+    build: ./frontend
+    container_name: teremnyilvantarto_frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    restart: unless-stopped
+    depends_on:
+      - backend
+
+
 volumes:
   mssql_data:
