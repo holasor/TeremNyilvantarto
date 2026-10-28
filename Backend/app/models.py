@@ -7,6 +7,7 @@ class FelhasznaloModel(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     nev = Column(String(100), nullable=False)
     email = Column(String(150), unique=True, nullable=False)
+    hashed_password = Column(String(255), nullable=False)
     szerepkor = Column(String(50), nullable=False)
     is_mesterkulcs = Column(Boolean, nullable=False, default=False)
 

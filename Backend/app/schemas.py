@@ -1,8 +1,7 @@
 from datetime import datetime
 from typing import Optional, List
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 
-# --- FELHASZNÁLÓ ---
 class FelhasznaloBase(BaseModel):
     nev: str
     email: EmailStr
@@ -10,7 +9,11 @@ class FelhasznaloBase(BaseModel):
     is_mesterkulcs: bool = False
 
 class FelhasznaloCreate(FelhasznaloBase):
-    pass
+    password: str
+
+class UserLogin(BaseModel):
+    email: EmailStr = Field(..., alias="username")
+    password: str
 
 class FelhasznaloResponse(FelhasznaloBase):
     id: int
@@ -18,8 +21,6 @@ class FelhasznaloResponse(FelhasznaloBase):
     class Config:
         from_attributes = True
 
-
-# --- TEREM ---
 class TeremBase(BaseModel):
     id: str
     teremszam: str
@@ -33,8 +34,6 @@ class TeremResponse(TeremBase):
     class Config:
         from_attributes = True
 
-
-# --- KULCS ---
 class KulcsBase(BaseModel):
     teremid: str
     statusz: str
@@ -48,8 +47,6 @@ class KulcsResponse(KulcsBase):
     class Config:
         from_attributes = True
 
-
-# --- FOGLALÁS ---
 class FoglalasBase(BaseModel):
     felhasznaloid: int
     teremid: str
@@ -65,8 +62,6 @@ class FoglalasResponse(FoglalasBase):
     class Config:
         from_attributes = True
 
-
-# --- KULCSMOZGÁS ---
 class KulcsMozgasBase(BaseModel):
     kulcsid: int
     felhasznaloid: int
@@ -82,8 +77,6 @@ class KulcsMozgasResponse(KulcsMozgasBase):
     class Config:
         from_attributes = True
 
-
-# --- HIBAJEGY ---
 class HibajegyBase(BaseModel):
     felhasznaloid: int
     teremid: str
@@ -99,8 +92,6 @@ class HibajegyResponse(HibajegyBase):
     class Config:
         from_attributes = True
 
-
-# --- AUDIT LOG ---
 class AuditLogBase(BaseModel):
     felhasznaloid: int
     muvelet: str
@@ -115,8 +106,6 @@ class AuditLogResponse(AuditLogBase):
     class Config:
         from_attributes = True
 
-
-# --- KARBANTARTÁSI IDŐSÁV ---
 class KarbantartasiIdosavBase(BaseModel):
     teremid: str
     kezdet: datetime
@@ -132,8 +121,6 @@ class KarbantartasiIdosavResponse(KarbantartasiIdosavBase):
     class Config:
         from_attributes = True
 
-
-# --- MESTERKULCS JOGOSULTSÁG ---
 class MesterkulcsJogosultsagBase(BaseModel):
     felhasznaloid: int
 

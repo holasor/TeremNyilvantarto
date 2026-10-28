@@ -1,7 +1,8 @@
-﻿from fastapi import FastAPI, Depends, HTTPException
+﻿from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy import text
+from passlib.context import CryptContext
 from .database import get_db, engine
 from . import models
 from . import schemas
@@ -10,12 +11,17 @@ models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Terem- és Kulcsnyilvántartó Rendszer")
 
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def hash_password(password: str) -> str:
+    return pwd_context.hash(password)
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    return pwd_context.verify(plain_password, hashed_password)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-    ],
+    allow_origins=["http://localhost:5173", "http://localhost:3000"],  # vagy ["*"] a teljes engedélyezéshez fejlesztés alatt
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -32,6 +38,49 @@ def test_db_connection(db: Session = Depends(get_db)):
         return {"status": "Sikeres adatbázis kapcsolat!", "result": result[0]}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Adatbázis hiba: {str(e)}")
+
+@app.post("/api/register", response_model=schemas.FelhasznaloResponse)
+def register_user(user: schemas.FelhasznaloCreate, db: Session = Depends(get_db)):
+    existing_user = db.query(models.FelhasznaloModel).filter(models.FelhasznaloModel.email == user.email).first()
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Ez az email cím már regisztrálva van."
+        )
+    
+    hashed_pwd = hash_password(user.password)
+
+    db_felhasznalo = models.FelhasznaloModel(
+        nev=user.nev,
+        email=user.email,
+        hashed_password=hashed_pwd,
+        szerepkor=user.szerepkor,
+        is_mesterkulcs=user.is_mesterkulcs
+    )
+    db.add(db_felhasznalo)
+    db.commit()
+    db.refresh(db_felhasznalo)
+    return db_felhasznalo
+
+@app.post("/api/login")
+def login_user(user: schemas.UserLogin, db: Session = Depends(get_db)):
+    db_user = db.query(models.FelhasznaloModel).filter(models.FelhasznaloModel.email == user.email).first()
+    if not db_user or not verify_password(user.password, db_user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Helytelen email cím vagy jelszó."
+        )
+    
+    return {
+        "message": "Sikeres bejelentkezés",
+        "user": {
+            "id": db_user.id,
+            "nev": db_user.nev,
+            "email": db_user.email,
+            "szerepkor": db_user.szerepkor,
+            "is_mesterkulcs": db_user.is_mesterkulcs
+        }
+    }
 
 @app.get("/termek", response_model=list[schemas.TeremResponse])
 def get_termek(db: Session = Depends(get_db)):
@@ -69,23 +118,6 @@ def get_felhasznalok(db: Session = Depends(get_db)):
     felhasznalok = db.query(models.FelhasznaloModel).all()
     return felhasznalok
 
-@app.post("/felhasznalok", response_model=schemas.FelhasznaloResponse)
-def create_felhasznalo(felhasznalo: schemas.FelhasznaloCreate, db: Session = Depends(get_db)):
-    letezo_felhasznalo = db.query(models.FelhasznaloModel).filter(models.FelhasznaloModel.email == felhasznalo.email).first()
-    if letezo_felhasznalo:
-        raise HTTPException(status_code=400, detail="Ilyen email címmel már létezik felhasználó.")
-    
-    db_felhasznalo = models.FelhasznaloModel(
-        nev=felhasznalo.nev,
-        email=felhasznalo.email,
-        szerepkor=felhasznalo.szerepkor,
-        is_mesterkulcs=felhasznalo.is_mesterkulcs
-    )
-    db.add(db_felhasznalo)
-    db.commit()
-    db.refresh(db_felhasznalo)
-    return db_felhasznalo
-
 @app.delete("/felhasznalok/{felhasznalo_id}")
 def delete_felhasznalo(felhasznalo_id: int, db: Session = Depends(get_db)):
     felhasznalo = db.query(models.FelhasznaloModel).filter(models.FelhasznaloModel.id == felhasznalo_id).first()
@@ -102,7 +134,6 @@ def get_kulcsok(db: Session = Depends(get_db)):
 
 @app.post("/kulcsok", response_model=schemas.KulcsResponse)
 def create_kulcs(kulcs: schemas.KulcsCreate, db: Session = Depends(get_db)):
-    # Ellenőrizzük, hogy a megadott terem létezik-e
     letezo_terem = db.query(models.TeremModel).filter(models.TeremModel.id == kulcs.teremid).first()
     if not letezo_terem:
         raise HTTPException(status_code=404, detail="A megadott terem nem létezik.")
@@ -132,12 +163,10 @@ def get_kulcsmozgasok(db: Session = Depends(get_db)):
 
 @app.post("/kulcsmozgasok", response_model=schemas.KulcsMozgasResponse)
 def create_kulcsmozgas(mozgas: schemas.KulcsMozgasCreate, db: Session = Depends(get_db)):
-    # Ellenőrizzük, hogy a kulcs létezik-e
     letezo_kulcs = db.query(models.KulcsModel).filter(models.KulcsModel.id == mozgas.kulcsid).first()
     if not letezo_kulcs:
         raise HTTPException(status_code=404, detail="A megadott kulcs nem található.")
     
-    # Ellenőrizzük, hogy a felhasználó létezik-e
     letezo_felhasznalo = db.query(models.FelhasznaloModel).filter(models.FelhasznaloModel.id == mozgas.felhasznaloid).first()
     if not letezo_felhasznalo:
         raise HTTPException(status_code=404, detail="A megadott felhasználó nem található.")
@@ -160,12 +189,10 @@ def get_foglalasok(db: Session = Depends(get_db)):
 
 @app.post("/foglalasok", response_model=schemas.FoglalasResponse)
 def create_foglalas(foglalas: schemas.FoglalasCreate, db: Session = Depends(get_db)):
-    # Ellenőrizzük, hogy a felhasználó létezik-e
     letezo_felhasznalo = db.query(models.FelhasznaloModel).filter(models.FelhasznaloModel.id == foglalas.felhasznaloid).first()
     if not letezo_felhasznalo:
         raise HTTPException(status_code=404, detail="A megadott felhasználó nem található.")
     
-    # Ellenőrizzük, hogy a terem létezik-e
     letezo_terem = db.query(models.TeremModel).filter(models.TeremModel.id == foglalas.teremid).first()
     if not letezo_terem:
         raise HTTPException(status_code=404, detail="A megadott terem nem található.")
