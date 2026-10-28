@@ -61,13 +61,14 @@ def alapadatok(client):
     felhasznalo = {
         "nev": "Tej Szerető János",
         "email": "tejesember@tejes.com",
+        "password": "TesztJelszo123!",
         "szerepkor": "Oktató",
         "is_mesterkulcs": False,
     }
 
     terem_response = client.post("/termek", json=terem)
     felhasznalo_response = client.post(
-        "/felhasznalok", json=felhasznalo
+        "/api/register", json=felhasznalo
     )
 
     assert terem_response.status_code == 200
