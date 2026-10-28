@@ -5,3 +5,5 @@ alembic
 pyodbc
 pydantic-settings
 email-validator
+pytest
+httpx
