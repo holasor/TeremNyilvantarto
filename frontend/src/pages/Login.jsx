@@ -1,4 +1,3 @@
-
 import { useState } from 'react'
 import { LockKeyhole, Mail, Eye, EyeOff, LogIn } from 'lucide-react'
 import './Login.css'
@@ -15,52 +14,45 @@ export default function Login({ onLogin }) {
     setError('')
     setLoading(true)
 
-    // Real backend login — kept for later
-    // try {
-    //   const response = await fetch('/api/auth/login', {
-    //     method: 'POST',
-    //     headers: {
-    //       'Content-Type': 'application/json',
-    //     },
-    //     credentials: 'include',
-    //     body: JSON.stringify({ username, password }),
-    //   })
-    //
-    //   if (!response.ok) {
-    //     if (response.status === 401) {
-    //       throw new Error('Invalid username or password.')
-    //     }
-    //     throw new Error('Unable to log in. Please try again.')
-    //   }
-    //
-    //   await onLogin()
-    // } catch (err) {
-    //   setError(
-    //     err instanceof TypeError
-    //       ? 'Cannot connect to the server. Please try again later.'
-    //       : err.message
-    //   )
-    // } finally {
-    //   setLoading(false)
-    // }
-
-
-    // Frontend-only demo login
     try {
       if (!username.trim() || !password) {
-        throw new Error('Please enter your username and password.')
+        throw new Error('Kérlek add meg a felhasználóneved és a jelszavad.')
       }
 
-      await new Promise((resolve) => setTimeout(resolve, 300))
+      // Valós API hívás a backend felé
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          username: username.trim(), 
+          password 
+        }),
+      })
+
+      if (!response.ok) {
+        if (response.status === 401 || response.status === 400) {
+          throw new Error('Hibás felhasználónév vagy jelszó.')
+        }
+        throw new Error('Nem sikerült bejelentkezni. Kérlek próbáld újra később.')
+      }
+
+      const data = await response.json()
 
       if (typeof onLogin !== 'function') {
-      throw new Error('Login handler is not configured.')
+        throw new Error('A bejelentkezési kezelő nem elérhető.')
       }
 
+      // Sikeres belépés esetén átadjuk a felhasználónevet
       onLogin(username.trim())
         
     } catch (err) {
-      setError(err.message)
+      setError(
+        err instanceof TypeError
+          ? 'Nem sikerült csatlakozni a szerverhez. Ellenőrizd, hogy fut-e a backend.'
+          : err.message
+      )
     } finally {
       setLoading(false)
     }
@@ -77,19 +69,18 @@ export default function Login({ onLogin }) {
           <p>Room management made simple.</p>
         </div>
 
-        <div className="login-heading">
-          <h2>Welcome back</h2>
-          <p>Sign in to access your dashboard.</p>
+        <div className="login-heading"><h2>Bejelentkezés</h2>
+          <p>Jelentkezz be a műszerfal eléréséhez.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="login-form">
-          <label htmlFor="username">Username</label>
+          <label htmlFor="username">Felhasználónév</label>
           <div className="login-input-wrap">
             <Mail size={19} />
             <input
               id="username"
               type="text"
-              placeholder="Enter your username"
+              placeholder="Add meg a felhasználóneved"
               value={username}
               onChange={(event) => setUsername(event.target.value)}
               autoComplete="username"
@@ -97,13 +88,13 @@ export default function Login({ onLogin }) {
             />
           </div>
 
-          <label htmlFor="password">Password</label>
+          <label htmlFor="password">Jelszó</label>
           <div className="login-input-wrap">
             <LockKeyhole size={19} />
             <input
               id="password"
               type={showPassword ? 'text' : 'password'}
-              placeholder="Enter your password"
+              placeholder="Add meg a jelszavad"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               autoComplete="current-password"
@@ -113,7 +104,7 @@ export default function Login({ onLogin }) {
               className="password-toggle"
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              aria-label={showPassword ? 'Hide password' : 'Show password'}
+              aria-label={showPassword ? 'Jelszó elrejtése' : 'Jelszó megjelenítése'}
             >
               {showPassword ? <EyeOff size={19} /> : <Eye size={19} />}
             </button>
@@ -130,13 +121,13 @@ export default function Login({ onLogin }) {
             type="submit"
             disabled={loading}
           >
-            {loading ? 'Signing in...' : 'Sign in'}
+            {loading ? 'Bejelentkezés...' : 'Bejelentkezés'}
             {!loading && <LogIn size={19} />}
           </button>
         </form>
 
         <p className="login-footer">
-          Secure access to your room management system.
+          Biztonságos hozzáférés a teremnyilvántartó rendszerhez.
         </p>
       </section>
     </main>

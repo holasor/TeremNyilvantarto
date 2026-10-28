@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: teremnyilvantarto_db
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=SzeretemATejet123!
+      - MSSQL_PID=Express
+    ports:
+      - "1433:1433"
+    volumes:
+      - mssql_data:/var/opt/mssql
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'SzeretemATejet123!' -C -Q 'SELECT 1' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  backend:
+    build: ./Backend
+    container_name: teremnyilvantarto_backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./Backend:/app
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DB_SERVER=db
+      - DB_PORT=1433
+      - DB_NAME=TeremNyilvantarto
+      - DB_USER=sa
+      - DB_PASSWORD=SzeretemATejet123!
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: always
+
+
+  frontend:
+    build: ./frontend
+    container_name: teremnyilvantarto_frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    restart: unless-stopped
+    depends_on:
+      - backend
+
+
+volumes:
+  mssql_data:
