@@ -7,8 +7,6 @@ from .database import get_db, engine
 from . import models
 from . import schemas
 
-models.Base.metadata.create_all(bind=engine)
-
 app = FastAPI(title="Terem- és Kulcsnyilvántartó Rendszer")
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
