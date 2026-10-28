@@ -25,3 +25,6 @@ Egyetemi Kulcs- és Teremnyilvántartó Rendszer a Projektlabor tárgyhoz.
  Plusz funkció: Értesítő rendszer. A tanár és a portás kap egy értesítést, nemsokból az óra vége előtt, hogy a kulcsot vissza kell vinni
 
  Docker futtatása a *docker compose up --build* parancsal lehetséges a program főkönyvtárából.
+
+Teszt belépés: Username: levi@example.com
+                Pw: levi
