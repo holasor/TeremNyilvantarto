@@ -4,7 +4,8 @@ import { Outlet } from 'react-router-dom'
 import Sidebar from './Sidebar'
 import Header from './Header'
 
-export default function AppLayout({ username }) {
+
+export default function AppLayout({ username, onLogout }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
@@ -16,8 +17,9 @@ export default function AppLayout({ username }) {
 
       <div className="min-h-screen lg:pl-64">
         <Header
-          username={username}
-          onMenuClick={() => setSidebarOpen(true)}
+        username={username}
+        onMenuClick={() => setSidebarOpen(true)}
+        onLogout={onLogout}
         />
 
         <main className="w-full p-4 sm:p-6 lg:p-8 2xl:p-10">

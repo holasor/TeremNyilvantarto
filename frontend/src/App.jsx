@@ -1,17 +1,28 @@
-
 import { useState } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import AppLayout from './components/AppLayout'
 import Dashboard from './pages/Dashboard'
 import Login from './pages/Login'
+import Bookings from './pages/Bookings'
+import KeyManagement from './pages/KeyManagement'
 
 export default function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [loggedInUsername, setLoggedInUsername] = useState('')
+  const [loggedInUser, setLoggedInUser] = useState(() => {
+    try {
+      return JSON.parse(sessionStorage.getItem('loggedInUser')) || null
+    } catch {
+      return null
+    }
+  })
 
-  function handleLogin(username) {
-    setLoggedInUsername(username)
-    setIsLoggedIn(true)
+  function handleLogin(user) {
+    sessionStorage.setItem('loggedInUser', JSON.stringify(user))
+    setLoggedInUser(user)
+  }
+
+  function handleLogout() {
+    sessionStorage.removeItem('loggedInUser')
+    setLoggedInUser(null)
   }
 
   return (
@@ -19,7 +30,7 @@ export default function App() {
       <Route
         path="/login"
         element={
-          isLoggedIn
+          loggedInUser
             ? <Navigate to="/" replace />
             : <Login onLogin={handleLogin} />
         }
@@ -27,22 +38,22 @@ export default function App() {
 
       <Route
         element={
-          isLoggedIn
-            ? <AppLayout username={loggedInUsername} />
+          loggedInUser
+            ? <AppLayout
+                username={loggedInUser.nev || loggedInUser.email || ''}
+                onLogout={handleLogout}
+              />
             : <Navigate to="/login" replace />
         }
       >
-        <Route index element={<Dashboard />} />
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/foglalasok" element={<Bookings />} />
+        <Route path="kulcskezeles" element={<KeyManagement />} />
       </Route>
 
       <Route
         path="*"
-        element={
-          <Navigate
-            to={isLoggedIn ? '/' : '/login'}
-            replace
-          />
-        }
+        element={<Navigate to={loggedInUser ? '/' : '/login'} replace />}
       />
     </Routes>
   )
