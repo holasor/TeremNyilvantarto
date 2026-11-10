@@ -1,5 +1,3 @@
-version: '3.12'
-
 services:
   db:
     image: mcr.microsoft.com/mssql/server:2022-latest
@@ -34,6 +32,7 @@ services:
       - DB_NAME=TeremNyilvantarto
       - DB_USER=sa
       - DB_PASSWORD=SzeretemATejet123!
+      - SEED_TEST_USERS=true
     depends_on:
       db:
         condition: service_healthy

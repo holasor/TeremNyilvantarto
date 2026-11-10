@@ -3,11 +3,90 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from passlib.context import CryptContext
-from .database import get_db, engine
+from .database import get_db, engine, create_database_if_not_exists, Base, engine, SessionLocal
 from . import models
 from . import schemas
+from contextlib import asynccontextmanager
+import os
 
-app = FastAPI(title="Terem- és Kulcsnyilvántartó Rendszer")
+def create_test_users():
+    db = SessionLocal()
+
+    test_users = [
+        {
+            "nev": "Oktató",
+            "email": "oktato@test.com",
+            "password": "Teszt123",
+            "szerepkor": "Oktató",
+        },
+        {
+            "nev": "Igénylő",
+            "email": "igenylo@test.com",
+            "password": "Teszt123",
+            "szerepkor": "Igénylő",
+        },
+        {
+            "nev": "Portás",
+            "email": "portas@test.com",
+            "password": "Teszt1234",
+            "szerepkor": "Portás",
+        },
+        {
+            "nev": "Operátor",
+            "email": "operator@test.com",
+            "password": "Teszt123",
+            "szerepkor": "Operátor",
+        },
+    ]
+
+    try:
+        for user in test_users:
+            existing_user = (
+                db.query(models.FelhasznaloModel)
+                .filter(
+                    models.FelhasznaloModel.email == user["email"]
+                )
+                .first()
+            )
+
+            if existing_user:
+                continue
+
+            new_user = models.FelhasznaloModel(
+                nev=user["nev"],
+                email=user["email"],
+                hashed_password=hash_password(user["password"]),
+                szerepkor=user["szerepkor"],
+                is_mesterkulcs=False,
+            )
+
+            db.add(new_user)
+
+        db.commit()
+
+    except Exception:
+        db.rollback()
+        raise
+
+    finally:
+        db.close()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    create_database_if_not_exists()
+
+    Base.metadata.create_all(bind=engine)
+
+    if os.getenv("SEED_TEST_USERS", "false").lower() == "true":
+        create_test_users()
+
+    yield
+
+
+app = FastAPI(
+    title="Terem- és Kulcsnyilvántartó Rendszer",
+    lifespan=lifespan
+)
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
