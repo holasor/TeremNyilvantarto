@@ -1,8 +1,13 @@
-import { Bell, Menu, Search, ChevronDown } from 'lucide-react'
 
-export default function Header({ onMenuClick, username = '' }) {
+import { useState } from 'react'
+import { Bell, Menu, Search, ChevronDown, LogOut } from 'lucide-react'
+
+export default function Header({ onMenuClick, username = '', onLogout }) {
+  const [dropdownOpen, setDropdownOpen] = useState(false)
+
   return (
     <header className="sticky top-0 z-30 flex h-[76px] items-center justify-between border-b border-slate-200 bg-white/95 px-4 backdrop-blur sm:px-6 lg:px-8">
+
       <div className="flex items-center gap-3">
         <button
           type="button"
@@ -24,6 +29,7 @@ export default function Header({ onMenuClick, username = '' }) {
       </div>
 
       <div className="flex items-center gap-2 sm:gap-4">
+
         <button
           type="button"
           aria-label="Keresés"
@@ -43,25 +49,65 @@ export default function Header({ onMenuClick, username = '' }) {
 
         <div className="h-8 w-px bg-slate-200" />
 
-        <button
-          type="button"
-          className="flex items-center gap-2 rounded-xl p-1.5 hover:bg-slate-50"
-        >
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-700">
-            {(username.trim().slice(0, 2) || 'U').toUpperCase()}
-          </div>
+        {/* User dropdown */}
+        <div className="relative">
 
-          <div className="hidden text-left sm:block">
-            <p className="text-sm font-semibold text-slate-800">
-              {username || 'Felhasználó'}
-            </p>
-            <p className="text-xs text-slate-500">
-              Bejelentkezett felhasználó
-            </p>
-          </div>
+          <button
+            type="button"
+            onClick={() => setDropdownOpen(!dropdownOpen)}
+            aria-expanded={dropdownOpen}
+            className="flex items-center gap-2 rounded-xl p-1.5 hover:bg-slate-50"
+          >
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-700">
+              {(username.trim().slice(0, 2) || 'U').toUpperCase()}
+            </div>
 
-          <ChevronDown size={16} className="hidden text-slate-400 sm:block" />
-        </button>
+            <div className="hidden text-left sm:block">
+              <p className="text-sm font-semibold text-slate-800">
+                {username || 'Felhasználó'}
+              </p>
+              <p className="text-xs text-slate-500">
+                Bejelentkezett felhasználó
+              </p>
+            </div>
+
+            <ChevronDown
+              size={16}
+              className={`hidden text-slate-400 transition-transform sm:block ${
+                dropdownOpen ? 'rotate-180' : ''
+              }`}
+            />
+          </button>
+
+          {/* Dropdown menu */}
+          {dropdownOpen && (
+            <div className="absolute right-0 top-full mt-2 w-56 rounded-xl border border-slate-200 bg-white p-2 shadow-lg">
+
+              <div className="border-b border-slate-100 px-3 py-2">
+                <p className="text-sm font-semibold text-slate-800">
+                  {username || 'Felhasználó'}
+                </p>
+                <p className="text-xs text-slate-500">
+                  Bejelentkezett felhasználó
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setDropdownOpen(false)
+                  onLogout()
+                }}
+                className="mt-2 flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-rose-600 transition hover:bg-rose-50"
+              >
+                <LogOut size={18} />
+                Kijelentkezés
+              </button>
+
+            </div>
+          )}
+
+        </div>
       </div>
     </header>
   )

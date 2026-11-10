@@ -6,6 +6,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
+from contextlib import asynccontextmanager
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 BACKEND_PATH = PROJECT_ROOT / "Backend"
@@ -15,7 +16,12 @@ from app.database import get_db
 from app.models import Base
 from app.main import app
 
+@asynccontextmanager
+async def disabled_lifespan(app):
+    yield
 
+
+app.router.lifespan_context = disabled_lifespan
 @pytest.fixture()
 def client():
     test_engine = create_engine(
