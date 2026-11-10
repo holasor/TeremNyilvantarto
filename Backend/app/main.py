@@ -19,23 +19,23 @@ def create_test_users():
             "password": "Teszt123",
             "szerepkor": "Oktató",
         },
-        {
-            "nev": "Igénylő",
-            "email": "igenylo@test.com",
-            "password": "Teszt123",
-            "szerepkor": "Igénylő",
-        },
-        {
+                {
             "nev": "Portás",
             "email": "portas@test.com",
             "password": "Teszt1234",
             "szerepkor": "Portás",
         },
         {
-            "nev": "Operátor",
-            "email": "operator@test.com",
+            "nev": "Admin",
+            "email": "admin@test.com",
             "password": "Teszt123",
-            "szerepkor": "Operátor",
+            "szerepkor": "Admin",
+        },
+        {
+            "nev": "Üzemeltetési Igazgató",
+            "email": "igazgato@test.com",
+            "password": "Teszt123",
+            "szerepkor": "Igazgató",
         },
     ]
 
