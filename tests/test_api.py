@@ -17,12 +17,11 @@ from app.models import Base
 from app.main import app
 
 @asynccontextmanager
-async def test_lifespan(app):
+async def disabled_lifespan(app):
     yield
 
 
-app.router.lifespan_context = test_lifespan
-
+app.router.lifespan_context = disabled_lifespan
 @pytest.fixture()
 def client():
     test_engine = create_engine(
