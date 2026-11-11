@@ -5,6 +5,7 @@ import Dashboard from './pages/Dashboard'
 import Login from './pages/Login'
 import Bookings from './pages/Bookings'
 import KeyManagement from './pages/KeyManagement'
+import RoomManagement from './pages/RoomManagement'
 
 export default function App() {
   const [loggedInUser, setLoggedInUser] = useState(() => {
@@ -14,6 +15,9 @@ export default function App() {
       return null
     }
   })
+  const isAdmin = Boolean(
+    loggedInUser && loggedInUser.szerepkor === 'Admin'
+  )
 
   function handleLogin(user) {
     sessionStorage.setItem('loggedInUser', JSON.stringify(user))
@@ -49,6 +53,10 @@ export default function App() {
         <Route path="/" element={<Dashboard />} />
         <Route path="/foglalasok" element={<Bookings />} />
         <Route path="kulcskezeles" element={<KeyManagement />} />
+        <Route
+          path="/termek"
+          element={<RoomManagement isAdmin={isAdmin} />}
+        />
       </Route>
 
       <Route

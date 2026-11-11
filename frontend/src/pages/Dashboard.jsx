@@ -12,8 +12,7 @@ import {
   MapPin,
   RefreshCw,
 } from 'lucide-react'
-
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+import { apiFetch } from '../api'
 
 const iconStyles = {
   blue: 'bg-blue-50 text-blue-600',
@@ -91,7 +90,7 @@ export default function Dashboard({ username = '' }) {
 
       const responses = await Promise.all(
         endpoints.map((endpoint) =>
-          fetch(`${API_BASE}/${endpoint}`)
+          apiFetch(endpoint)
         )
       )
 
@@ -146,7 +145,7 @@ export default function Dashboard({ username = '' }) {
     const start = new Date(booking.kezdet)
     const end = new Date(booking.veg)
 
-    return start <= now && end >= now
+    return booking.statusz !== 'no_show' && start <= now && end >= now
   })
 
   // A key is considered checked out if its latest
@@ -162,7 +161,7 @@ export default function Dashboard({ username = '' }) {
   }
 
   const checkedOutMovements = [...latestMovementByKey.values()]
-    .filter((movement) => !movement.visszavetelideje)
+    .filter((movement) => !movement.visszaadva)
 
   // Temporary rule: a key is overdue after 24 hours.
   const overdueMovements = checkedOutMovements.filter(
@@ -225,7 +224,7 @@ export default function Dashboard({ username = '' }) {
       const room = data.rooms.find(
         (item) => item.id === key?.teremid
       )
-      const returned = Boolean(movement.visszavetelideje)
+      const returned = movement.visszaadva
 
       return {
         ...movement,

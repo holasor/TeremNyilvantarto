@@ -10,8 +10,7 @@ import {
 } from 'lucide-react'
 
 import buildingImage from '../assets/projektlab-mik.png'
-
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+import { apiFetch } from '../api'
 
 const floors = [
   { id: 'basement', label: 'Alagsor', number: 'B' },
@@ -64,7 +63,7 @@ export default function KeyManagement() {
 
       const responses = await Promise.all(
         endpoints.map(endpoint =>
-          fetch(`${API_BASE}/${endpoint}`)
+          apiFetch(endpoint)
         )
       )
 
@@ -117,7 +116,7 @@ export default function KeyManagement() {
   function getKeyStatus(key) {
     const movement = getLatestMovement(key.id)
 
-    if (movement && !movement.visszavetelideje) {
+    if (movement && !movement.visszaadva) {
       return {
         label: 'Kiadva',
         color: 'bg-amber-100 text-amber-700',
@@ -391,7 +390,7 @@ export default function KeyManagement() {
                                   K-{String(key.id).padStart(3, '0')}
                                 </p>
 
-                                {status.movement && !status.movement.visszavetelideje && (
+                                {status.movement && !status.movement.visszaadva && (
                                   <p className="mt-1 flex items-center gap-1 text-xs text-slate-500">
                                     <User size={12} />
                                     {getUserName(status.movement.felhasznaloid)}
