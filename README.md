@@ -27,12 +27,14 @@ Egyetemi Kulcs- és Teremnyilvántartó Rendszer a Projektlabor tárgyhoz.
  Docker futtatása a *docker compose up --build* parancsal lehetséges a program főkönyvtárából.
 
  Portok:
+ 
     Backend:8000
     Frontend:5173
     Database:1433
 
 
 Teszt felhasználók
+
         Név: "Oktató"
         Email: "oktato@test.com"
         Jelszó: "Teszt123"
