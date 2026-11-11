@@ -1,4 +1,13 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Text
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+)
 from .database import Base
 
 class FelhasznaloModel(Base):
@@ -18,6 +27,7 @@ class TeremModel(Base):
     teremszam = Column(String(50), nullable=False)
     ferohely = Column(Integer, nullable=False)
     epulet = Column(String(100), nullable=False)
+    felszereles = Column(String(1000), nullable=False, default="", server_default="")
 
 class KulcsModel(Base):
     __tablename__ = "KULCS"
@@ -34,6 +44,8 @@ class FoglalasModel(Base):
     teremid = Column(String(50), ForeignKey("TEREM.id"), nullable=False)
     kezdet = Column(DateTime, nullable=False)
     veg = Column(DateTime, nullable=False)
+    specialis_igeny = Column(String(1000), nullable=False, default="", server_default="")
+    statusz = Column(String(30), nullable=False, default="aktiv", server_default="aktiv")
 
 class KulcsMozgasModel(Base):
     __tablename__ = "KULCSMOZGAS"
@@ -43,6 +55,7 @@ class KulcsMozgasModel(Base):
     felhasznaloid = Column(Integer, ForeignKey("FELHASZNALO.id"), nullable=False)
     kiadasideje = Column(DateTime, nullable=False)
     visszavetelideje = Column(DateTime, nullable=True)
+    visszaadva = Column(Boolean, nullable=False, default=False, server_default="0")
 
 class HibajegyModel(Base):
     __tablename__ = "HIBAJEGY"
@@ -57,7 +70,7 @@ class AuditLogModel(Base):
     __tablename__ = "AUDIT_LOG"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    felhasznaloid = Column(Integer, ForeignKey("FELHASZNALO.id"), nullable=False)
+    felhasznaloid = Column(Integer, nullable=False)
     idobelyeg = Column(DateTime, nullable=False)
     muvelet = Column(String(255), nullable=False)
 
@@ -72,6 +85,7 @@ class KarbantartasiIdosavModel(Base):
 
 class MesterkulcsJogosultsagModel(Base):
     __tablename__ = "MESTERKULCS_JOGOSULTSAG"
+    __table_args__ = (UniqueConstraint("felhasznaloid", name="uq_mesterkulcs_felhasznalo"),)
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     felhasznaloid = Column(Integer, ForeignKey("FELHASZNALO.id"), nullable=False)

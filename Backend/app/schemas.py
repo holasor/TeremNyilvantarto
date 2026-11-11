@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional
 from pydantic import BaseModel, EmailStr, Field
 
 class FelhasznaloBase(BaseModel):
@@ -21,14 +21,28 @@ class FelhasznaloResponse(FelhasznaloBase):
     class Config:
         from_attributes = True
 
+class FelhasznaloKonyvtarResponse(BaseModel):
+    id: int
+    nev: str
+
+    class Config:
+        from_attributes = True
+
 class TeremBase(BaseModel):
     id: str
     teremszam: str
     ferohely: int
     epulet: str
+    felszereles: str = ""
 
 class TeremCreate(TeremBase):
     pass
+
+class TeremUpdate(BaseModel):
+    teremszam: str
+    ferohely: int
+    epulet: str
+    felszereles: str = ""
 
 class TeremResponse(TeremBase):
     class Config:
@@ -52,12 +66,14 @@ class FoglalasBase(BaseModel):
     teremid: str
     kezdet: datetime
     veg: datetime
+    specialis_igeny: str = ""
 
 class FoglalasCreate(FoglalasBase):
     pass
 
 class FoglalasResponse(FoglalasBase):
     id: int
+    statusz: str = "aktiv"
 
     class Config:
         from_attributes = True
@@ -73,6 +89,7 @@ class KulcsMozgasCreate(KulcsMozgasBase):
 class KulcsMozgasResponse(KulcsMozgasBase):
     id: int
     kiadasideje: datetime
+    visszaadva: bool
 
     class Config:
         from_attributes = True
@@ -132,3 +149,8 @@ class MesterkulcsJogosultsagResponse(MesterkulcsJogosultsagBase):
 
     class Config:
         from_attributes = True
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    user: FelhasznaloResponse

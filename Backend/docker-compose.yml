@@ -34,6 +34,9 @@ services:
       - DB_NAME=TeremNyilvantarto
       - DB_USER=sa
       - DB_PASSWORD=SzeretemATejet123!
+      - TOKEN_SECRET=${TOKEN_SECRET:-}
+      - NO_SHOW_GRACE_MINUTES=${NO_SHOW_GRACE_MINUTES:-15}
+      - KEY_OVERDUE_HOURS=${KEY_OVERDUE_HOURS:-24}
     depends_on:
       db:
         condition: service_healthy
