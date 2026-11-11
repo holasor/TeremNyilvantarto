@@ -19,7 +19,6 @@ export default function Login({ onLogin }) {
         throw new Error('Kérlek add meg a felhasználóneved és a jelszavad.')
       }
 
-      // Valós API hívás a backend felé
       const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
       const response = await fetch(`${API_BASE}/api/login`, {
         method: 'POST',
@@ -45,10 +44,7 @@ export default function Login({ onLogin }) {
         throw new Error('A bejelentkezési kezelő nem elérhető.')
       }
 
-      // Sikeres belépés esetén átadjuk a User objektumot
-      onLogin(data.user || {
-        username: username.trim()
-      })
+      onLogin({ ...data.user, access_token: data.access_token })
 
     } catch (err) {
       setError(

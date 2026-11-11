@@ -9,8 +9,7 @@ import {
   DoorOpen,
   User,
 } from 'lucide-react'
-
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+import { apiFetch } from '../api'
 
 const weekdays = [
   'Hétfő',
@@ -23,6 +22,10 @@ const weekdays = [
 ]
 
 function getStatus(booking, movements) {
+  if (booking.statusz === 'no_show') {
+    return 'no-show'
+  }
+
   const now = new Date()
   const start = new Date(booking.kezdet)
   const end = new Date(booking.veg)
@@ -30,7 +33,7 @@ function getStatus(booking, movements) {
   const relatedMovements = movements.filter(
     (movement) =>
       Number(movement.felhasznaloid) === Number(booking.felhasznaloid) &&
-      !movement.visszavetelideje &&
+      !movement.visszaadva &&
       new Date(movement.kiadasideje) >= start &&
       new Date(movement.kiadasideje) <= end
   )
@@ -51,6 +54,12 @@ function getStatus(booking, movements) {
 }
 
 const statusConfig = {
+  'no-show': {
+    label: 'Nem jelent meg – a terem felszabadult',
+    color: 'bg-slate-400',
+    light: 'bg-slate-50',
+    text: 'text-slate-600',
+  },
   rented: {
     label: 'Kulcs kiadva',
     color: 'bg-emerald-500',
@@ -119,7 +128,7 @@ export default function Bookings() {
 
       const responses = await Promise.all(
         endpoints.map((endpoint) =>
-          fetch(`${API_BASE}/${endpoint}`)
+          apiFetch(endpoint)
         )
       )
 
